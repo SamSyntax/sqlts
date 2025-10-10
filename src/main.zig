@@ -35,10 +35,10 @@ fn read_file(alloc: std.mem.Allocator, path: []const u8) !void {
         std.debug.print("> [error] failed to get endpos of the file {s}, err={}\n", .{ path, err });
         return;
     };
-    std.debug.print("[DEBUG]: {d}\n", .{endpos});
+    // std.debug.print("[DEBUG]: {d}\n", .{endpos});
     const content = try file.readToEndAlloc(alloc, endpos);
-    std.debug.print("[DEBUG] content len: {d}\nContent: {s}\n", .{ content.len, content });
-    tokenizer.tokenizer(content) catch unreachable;
+    // std.debug.print("[DEBUG] content len: {d}\nContent: {s}\n", .{ content.len, content });
+    tokenizer.tokenizer(content, alloc) catch unreachable;
 }
 
 fn read_dir(alloc: std.mem.Allocator, path: []const u8) !void {

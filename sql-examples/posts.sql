@@ -6,3 +6,4 @@ CREATE TABLE posts (
   published  BOOLEAN  NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
