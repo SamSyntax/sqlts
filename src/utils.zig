@@ -39,7 +39,7 @@ pub fn indexOfCI(h: []const u8, n: []const u8) ?usize {
     return null;
 }
 
-fn startsWithCI(h: []const u8, n: []const u8) bool {
+pub fn startsWithCI(h: []const u8, n: []const u8) bool {
     if (h.len < n.len) return false;
     return indexOfCI(h, n) == 0;
 }

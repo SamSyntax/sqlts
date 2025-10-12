@@ -48,13 +48,13 @@ test "toCamelCase variations" {
 
 // ╔══════════════════════════════════════ indexOfCI TESTS ══════════════════════════════════════╗
 
-const IndexOfCiTest = struct {
+const IndexOfCITest = struct {
     haystack: []const u8,
     needle: []const u8,
     expected: ?usize,
 };
 
-const indexOfCiTests = [_]IndexOfCiTest{
+const indexOfCiTests = [_]IndexOfCITest{
     .{
         .haystack = "user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4()",
         .needle = "primary key",
@@ -80,6 +80,50 @@ const indexOfCiTests = [_]IndexOfCiTest{
 test "indexOfCI variations" {
     for (indexOfCiTests) |tc| {
         const got = utils.indexOfCI(tc.haystack, tc.needle);
+
+        try std.testing.expectEqual(tc.expected, got);
+    }
+}
+
+// ╔══════════════════════════════════════ startsWithCI TESTS ══════════════════════════════════════╗
+
+const StartsWithCITest = struct {
+    haystack: []const u8,
+    needle: []const u8,
+    expected: bool,
+};
+
+const startsWithCITests = [_]StartsWithCITest{
+    .{
+        .haystack = "PRIMARY KEY DEFAULT uuid_generate_v4()",
+        .needle = "primary key",
+        .expected = true,
+    },
+    .{
+        .haystack = "test case form not null",
+        .needle = "not null",
+        .expected = false,
+    },
+    .{
+        .haystack = "created_at timestamp with time zone not null default now()",
+        .needle = "primary key",
+        .expected = false,
+    },
+    .{
+        .haystack = "referrer_id  UUID            REFERENCES \"User\"(user_id) ON DELETE SET NULL,",
+        .needle = "REFERENCES",
+        .expected = false,
+    },
+    .{
+        .haystack = "REFERENCES \"User\"(user_id) ON DELETE SET NULL,",
+        .needle = "REFERENCES",
+        .expected = true,
+    },
+};
+
+test "startsWithCI variations" {
+    for (startsWithCITests) |tc| {
+        const got = utils.startsWithCI(tc.haystack, tc.needle);
 
         try std.testing.expectEqual(tc.expected, got);
     }
