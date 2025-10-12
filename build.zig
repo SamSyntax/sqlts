@@ -17,7 +17,14 @@ pub fn build(b: *Build) void {
         .root_module = lib_mod,
     });
 
+    const exe = b.addExecutable(.{
+        .linkage = .static,
+        .name = "sqlts",
+        .root_module = lib_mod,
+    });
+
     b.installArtifact(lib);
+    b.installArtifact(exe);
 
     const run_lib_tests = b.addRunArtifact(lib_tests);
     const test_step = b.step("test", "Run unit tests");

@@ -18,13 +18,16 @@ pub fn parseSchema(alloc: std.mem.Allocator, sql: []const u8) !std.ArrayList(typ
         if (idx >= sql.len) break;
 
         var table_name: []const u8 = undefined;
-        if (sql[idx] == '"') {
+        if (sql[idx] == '"' and !std.mem.eql(u8, sql[idx .. idx + 13], "IF NOT EXISTS")) {
             idx += 1;
             const start = idx;
             while (idx < sql.len and sql[idx] != '"') idx += 1;
             table_name = sql[start..idx];
             idx += 1;
         } else {
+            if (std.mem.eql(u8, sql[idx .. idx + 14], "IF NOT EXISTS ")) {
+                idx += 14;
+            }
             const start = idx;
             while (idx < sql.len and !utils.isWhitespace(sql[idx]) and sql[idx] != '(') {
                 idx += 1;
@@ -145,14 +148,24 @@ fn parseColumn(alloc: std.mem.Allocator, def: []const u8) !types.Column {
     };
 }
 
-pub fn emitTsFile(tables: std.ArrayList(types.Table), outPath: []const u8) !void {
+pub fn emitTsFile(tables: std.ArrayList(types.Table), outPath: []const u8, asInterface: bool) !void {
     const cwd = std.fs.cwd();
     var file = try cwd.createFile(outPath, .{ .truncate = false });
     defer file.close();
 
+    var tskeytype: []const u8 = undefined;
+
+    if (asInterface) {
+        tskeytype = "interface ";
+    } else {
+        tskeytype = "type ";
+    }
+
     for (tables.items) |table| {
-        try file.writeAll("export interface ");
+        try file.writeAll("export ");
+        try file.writeAll(tskeytype);
         try file.writeAll(table.ts_name);
+        try file.writeAll(" = ");
         try file.writeAll(" {\n");
         for (table.columns.items) |col| {
             if (col.is_nullable) {

@@ -18,7 +18,6 @@ fn get_absolute(path: []const u8) []const u8 {
         std.debug.print("> [error] abs_path couldn't be established, err={}\n", .{err});
         return "";
     };
-    std.debug.print("Rel: {s} Path: {s}\n", .{ path, absolutePath });
     return absolutePath;
 }
 
@@ -42,7 +41,6 @@ pub fn read_dir(alloc: std.mem.Allocator, path: []const u8) anyerror!std.ArrayLi
             std.debug.print("> [error] failed to join paths and construct an absolute path from {s} and {s}, err={}\n", .{ path, entry.path, err });
             return err;
         };
-        std.debug.print("[DEBUG] {s}\n", .{full_path});
         try paths.append(alloc, full_path);
     }
 

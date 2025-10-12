@@ -1,4 +1,4 @@
-export interface Posts {
+export type Posts =  {
   id: string;
   authorId: string;
   title: string;
@@ -7,7 +7,7 @@ export interface Posts {
   createdAt: string;
 }
 
-export interface Users {
+export type Users =  {
   userId: string;
   name: string;
   bio?: string | null;
@@ -20,14 +20,14 @@ export interface Users {
   referrerId?: string | null;
 }
 
-export interface OrderHeader {
+export type OrderHeader =  {
   orderId?: number | null;
   userRef: string;
   shipAddress: any;
   orderDate: string;
 }
 
-export interface OrderItems {
+export type OrderItems =  {
   orderId: any;
   userRef: string;
   itemId: any;

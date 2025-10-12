@@ -9,12 +9,14 @@ pub fn main() !void {
 
     const args = try std.process.argsAlloc(alloc);
     defer std.process.argsFree(alloc, args);
-    if (args.len != 3) {
-        std.debug.print("usage: {s} <schema.sql> <out.ts>\n", .{args[0]});
+    if (args.len < 3 or args.len > 4) {
+        std.debug.print("usage: {s} <schema.sql> <out.ts> <interface|type> (defaults to interface)\n", .{args[0]});
         return;
     }
     const schema_path = args[1];
     const out_path = args[2];
+    var asInterface: bool = false;
+    if (std.mem.eql(u8, args[3], "interface")) asInterface = true;
 
     const schema_files = reader.read_dir(alloc, schema_path) catch |err| {
         std.debug.print("{}\n", .{err});
@@ -35,5 +37,5 @@ pub fn main() !void {
             try all_tables.append(alloc, table);
         }
     }
-    try parser.emitTsFile(all_tables, out_path);
+    try parser.emitTsFile(all_tables, out_path, asInterface);
 }
