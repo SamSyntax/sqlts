@@ -1,26 +1,14 @@
 const std = @import("std");
 const tokenizer = @import("tokenizer.zig");
 
-pub fn read_file(alloc: std.mem.Allocator, path: []const u8) anyerror!void {
-    var file = std.fs.openFileAbsolute(path, .{ .mode = .read_only }) catch |err| {
-        std.debug.print("> [error] failed to open file: {s}, err={}\n", .{ path, err });
-        return err;
-    };
+pub fn read_file(alloc: std.mem.Allocator, path: []const u8) anyerror![]u8 {
+    const cwd = std.fs.cwd();
+    var file = try cwd.openFile(path, .{ .mode = .read_only });
     defer file.close();
-    const endpos = file.getEndPos() catch |err| {
-        std.debug.print("> [error] failed to get endpos of the file {s}, err={}\n", .{ path, err });
-        return err;
-    };
-    // std.debug.print("[DEBUG]: {d}\n", .{endpos});
-    const content = try file.readToEndAlloc(alloc, endpos);
-    // std.debug.print("[DEBUG] content len: {d}\nContent: {s}\n", .{ content.len, content });
-    const queries = tokenizer.tokenizer(content, alloc) catch |err| {
-        return err;
-    };
 
-    for (queries) |query| {
-        std.debug.print("{s}\n", .{query});
-    }
+    return file.readToEndAlloc(alloc, 4096) catch |err| {
+        return err;
+    };
 }
 
 pub fn read_dir(alloc: std.mem.Allocator, path: []const u8) !void {
