@@ -35,10 +35,16 @@ const toCamelTests = [_]ToCamelTest{
 
 test "toCamelCase variations" {
     const alloc = std.testing.allocator;
-    for (toCamelTests) |tc| {
+    std.debug.print("\n═══════════════ toCamelCase TESTS ═══════════════\n\n", .{});
+    for (toCamelTests, 0..) |tc, i| {
         const got = try utils.toCamelCase(alloc, tc.input, tc.upperFirst);
         defer alloc.free(got);
 
+        if (std.mem.eql(u8, tc.expected, got)) {
+            std.debug.print("Test {d} passed! Expected: {s} | Got: {s}\n", .{ i + 1, tc.expected, got });
+        } else {
+            std.debug.print("Test {d} failed! Expected: {s} | Got: {s}\n", .{ i + 1, tc.expected, got });
+        }
         try std.testing.expectEqualStrings(
             tc.expected,
             got,
@@ -78,8 +84,15 @@ const indexOfCiTests = [_]IndexOfCITest{
 };
 
 test "indexOfCI variations" {
-    for (indexOfCiTests) |tc| {
+    std.debug.print("\n══════════════e indexOfCI TESTS ═══════════════\n\n", .{});
+    for (indexOfCiTests, 0..) |tc, i| {
         const got = utils.indexOfCI(tc.haystack, tc.needle);
+
+        if (got == tc.expected) {
+            std.debug.print("Test {d} passed! Expected: {?} | Got: {?}\n", .{ i + 1, tc.expected, got });
+        } else {
+            std.debug.print("Test {d} failed! Expected: {?} | Got: {?}\n", .{ i + 1, tc.expected, got });
+        }
 
         try std.testing.expectEqual(tc.expected, got);
     }
@@ -110,7 +123,7 @@ const startsWithCITests = [_]StartsWithCITest{
         .expected = false,
     },
     .{
-        .haystack = "referrer_id  UUID            REFERENCES \"User\"(user_id) ON DELETE SET NULL,",
+        .haystack = "referrer_id  UUID            REFERENCES \"User\"(user_id) ON DELETE SET NULL",
         .needle = "REFERENCES",
         .expected = false,
     },
@@ -122,8 +135,66 @@ const startsWithCITests = [_]StartsWithCITest{
 };
 
 test "startsWithCI variations" {
-    for (startsWithCITests) |tc| {
+    std.debug.print("\n═══════════════ startsWithCI TESTS ═══════════════\n\n", .{});
+    for (startsWithCITests, 0..) |tc, i| {
         const got = utils.startsWithCI(tc.haystack, tc.needle);
+
+        if (got == tc.expected) {
+            std.debug.print("Test {d} passed! Expected: {any} | Got: {any}\n", .{ i + 1, tc.expected, got });
+        } else {
+            std.debug.print("Test {d} failed! Expected: {any} | Got: {any}\n", .{ i + 1, tc.expected, got });
+        }
+
+        try std.testing.expectEqual(tc.expected, got);
+    }
+}
+
+// ╔══════════════════════════════════════ endsWithCI TESTS ══════════════════════════════════════╗
+
+const EndsWithCITest = struct {
+    haystack: []const u8,
+    needle: []const u8,
+    expected: bool,
+};
+
+const endsWithCITests = [_]EndsWithCITest{
+    .{
+        .haystack = "REFERENCES \"User\"(user_id) ON DELETE SET NULL",
+        .needle = "NULL",
+        .expected = true,
+    },
+    .{
+        .haystack = "test case form not null",
+        .needle = "not null",
+        .expected = true,
+    },
+    .{
+        .haystack = "PRIMARY KEY DEFAULT uuid_generate_v4()",
+        .needle = "primary key",
+        .expected = false,
+    },
+    .{
+        .haystack = "created_at timestamp with time zone not null default now()",
+        .needle = "primary key",
+        .expected = false,
+    },
+    .{
+        .haystack = "referrer_id  UUID            REFERENCES \"User\"(user_id) ON DELETE SET NULL,",
+        .needle = "REFERENCES",
+        .expected = false,
+    },
+};
+
+test "endsWithCI variations" {
+    std.debug.print("\n═══════════════ endsWithCI TESTS ═══════════════\n\n", .{});
+    for (endsWithCITests, 0..) |tc, i| {
+        const got = utils.endsWithCI(tc.haystack, tc.needle);
+
+        if (got == tc.expected) {
+            std.debug.print("Test {d} passed! Expected: {} | Got: {}\n", .{ i + 1, tc.expected, got });
+        } else {
+            std.debug.print("Test {d} failed! Expected: {} | Got: {}\n", .{ i + 1, tc.expected, got });
+        }
 
         try std.testing.expectEqual(tc.expected, got);
     }

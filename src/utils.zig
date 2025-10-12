@@ -44,7 +44,7 @@ pub fn startsWithCI(h: []const u8, n: []const u8) bool {
     return indexOfCI(h, n) == 0;
 }
 
-fn endsWithCI(h: []const u8, n: []const u8) bool {
+pub fn endsWithCI(h: []const u8, n: []const u8) bool {
     if (h.len < n.len) return false;
     return startsWithCI(h[h.len - n.len ..], n);
 }
