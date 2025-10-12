@@ -1,4 +1,4 @@
 build:
 	@zig build
 run:
-	@make build && ./zig-out/bin/sqlts ./sql-examples/tricky.sql ./test.ts
+	@make build && ./zig-out/bin/sqlts ./sql-examples/ ./test.ts

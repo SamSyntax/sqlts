@@ -2,49 +2,6 @@ const std = @import("std");
 const types = @import("types.zig");
 const utils = @import("utils.zig");
 
-fn tokenizer(content: []const u8, alloc: std.mem.Allocator) anyerror![][]const u8 {
-    var list = try std.ArrayList([]const u8).initCapacity(alloc, 32) catch |err| {
-        std.debug.print("> [error] couldn't init list with for tokenizer, err{}\n", .{err});
-        return err;
-    };
-    defer list.deinit(alloc);
-    var idx_cp: usize = 0;
-    for (content, 0..) |value, i| {
-        if (value == types.DELIM) {
-            try list.append(alloc, content[idx_cp .. i + 1]);
-            idx_cp = i + 1;
-            std.debug.print("[DEBUG] Query has been tokenized\n", .{});
-            continue;
-        }
-    }
-
-    const clone = list.clone(alloc) catch |err| {
-        return err;
-    };
-    return clone.items;
-}
-
-pub fn parse(content: []const u8, alloc: std.mem.Allocator) !void {
-    const items = tokenizer(content, alloc) catch unreachable;
-
-    for (items) |query| {
-        try queryproc(query);
-    }
-}
-
-fn queryproc(raw: []const u8) !void {
-    var lines = std.mem.splitAny(u8, raw, ",");
-
-    while (lines.next()) |line| {
-        if (line.len == 0) {
-            continue;
-        } else {
-            const trimmed = std.mem.trimEnd(u8, line, std.ascii.whitespace[0..]);
-            std.debug.print("Line: {s}\n", .{trimmed});
-        }
-    }
-}
-
 pub fn parseSchema(alloc: std.mem.Allocator, sql: []const u8) !std.ArrayList(types.Table) {
     var tables = try std.ArrayList(types.Table).initCapacity(alloc, 8);
 
@@ -57,7 +14,6 @@ pub fn parseSchema(alloc: std.mem.Allocator, sql: []const u8) !std.ArrayList(typ
         const ct_idx = pos + rel_i;
         var idx = ct_idx + "create table".len;
 
-        std.debug.print("TABLE_NAME \n", .{});
         while (idx < sql.len and utils.isWhitespace(sql[idx])) idx += 1;
         if (idx >= sql.len) break;
 
@@ -123,7 +79,6 @@ pub fn parseSchema(alloc: std.mem.Allocator, sql: []const u8) !std.ArrayList(typ
         }
 
         const ts_name = try utils.toCamelCase(alloc, table_name, true);
-        std.debug.print("TS_NAME: {s}\n", .{ts_name});
         const t = types.Table{
             .name = table_name,
             .ts_name = ts_name,
@@ -175,25 +130,25 @@ fn parseColumn(alloc: std.mem.Allocator, def: []const u8) !types.Column {
 
     const sql_type = def[type_start..type_end];
 
-    const is_nullable = std.mem.indexOf(u8, def, "not null") == null;
+    const hasNotNull = utils.indexOfCI(def, "not null") != null;
+    const hasPK = utils.indexOfCI(def, "primary key") != null;
+    const is_nullable = !(hasNotNull or hasPK);
 
     const ts_name = try utils.toCamelCase(alloc, name, false);
-    const ts_type = utils.mapSqlType(sql_type);
 
     return types.Column{
         .name = name,
         .ts_name = ts_name,
         .sql_type = sql_type,
-        .ts_type = ts_type,
+        .ts_type = try utils.mapSqlType(alloc, sql_type),
         .is_nullable = is_nullable,
     };
 }
 
 pub fn emitTsFile(tables: std.ArrayList(types.Table), outPath: []const u8) !void {
     const cwd = std.fs.cwd();
-    var file = try cwd.createFile(outPath, .{ .truncate = true });
+    var file = try cwd.createFile(outPath, .{ .truncate = false });
     defer file.close();
-    std.debug.print("Len: {d}\n", .{tables.items.len});
 
     for (tables.items) |table| {
         try file.writeAll("export interface ");

@@ -1,28 +1,37 @@
-export interface User {
-  userId?: any | null;
-  name?: string | null;
-  bio?: any | null;
-  email?: any | null;
+export interface Posts {
+  id: string;
+  authorId: string;
+  title: string;
+  body: string;
+  published: boolean;
+  createdAt: string;
+}
+
+export interface Users {
+  userId: string;
+  name: string;
+  bio?: string | null;
+  email?: string | null;
   preferences?: any | null;
-  tags?: any | null;
-  moods?: any | null;
-  createdAt?: any | null;
-  updatedAt?: any | null;
-  referrerId?: any | null;
+  tags?: string[] | null;
+  moods: any[];
+  createdAt: string;
+  updatedAt: string;
+  referrerId?: string | null;
 }
 
 export interface OrderHeader {
-  orderId?: any | null;
-  userRef?: any | null;
-  shipAddress?: any | null;
-  orderDate?: any | null;
+  orderId?: number | null;
+  userRef: string;
+  shipAddress: any;
+  orderDate: string;
 }
 
 export interface OrderItems {
-  orderId?: any | null;
-  userRef?: any | null;
-  itemId?: any | null;
-  quantity?: any | null;
-  priceCents?: any | null;
+  orderId: any;
+  userRef: string;
+  itemId: any;
+  quantity: any;
+  priceCents: any;
 }
 

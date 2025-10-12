@@ -1,5 +1,5 @@
 const std = @import("std");
-const tokenizer = @import("tokenizer.zig");
+const parser = @import("parser.zig");
 
 pub fn read_file(alloc: std.mem.Allocator, path: []const u8) anyerror![]u8 {
     const cwd = std.fs.cwd();
@@ -11,12 +11,27 @@ pub fn read_file(alloc: std.mem.Allocator, path: []const u8) anyerror![]u8 {
     };
 }
 
-pub fn read_dir(alloc: std.mem.Allocator, path: []const u8) !void {
-    var dir = std.fs.openDirAbsolute(path, .{ .iterate = true }) catch |err| {
+fn get_absolute(path: []const u8) []const u8 {
+    const cwd = std.fs.cwd();
+    var buf: [std.fs.max_path_bytes]u8 = undefined;
+    const absolutePath = cwd.realpath(path, &buf) catch |err| {
+        std.debug.print("> [error] abs_path couldn't be established, err={}\n", .{err});
+        return "";
+    };
+    std.debug.print("Rel: {s} Path: {s}\n", .{ path, absolutePath });
+    return absolutePath;
+}
+
+pub fn read_dir(alloc: std.mem.Allocator, path: []const u8) anyerror!std.ArrayList([]u8) {
+    const abs_path = get_absolute(path);
+    var dir = std.fs.openDirAbsolute(abs_path, .{ .iterate = true }) catch |err| {
         std.debug.print("> [error] opening absolute dir by provided path, err{}\n", .{err});
-        return;
+        return err;
     };
     defer dir.close();
+    var paths = std.ArrayList([]u8).initCapacity(alloc, 4) catch |err| {
+        return err;
+    };
     var walker = try dir.walk(alloc);
     defer walker.deinit();
     while (try walker.next()) |entry| {
@@ -25,12 +40,11 @@ pub fn read_dir(alloc: std.mem.Allocator, path: []const u8) !void {
             entry.path,
         }) catch |err| {
             std.debug.print("> [error] failed to join paths and construct an absolute path from {s} and {s}, err={}\n", .{ path, entry.path, err });
-            return;
+            return err;
         };
         std.debug.print("[DEBUG] {s}\n", .{full_path});
-        read_file(alloc, full_path) catch |err| {
-            std.debug.print("> [error] failed to read contents of {s}/{s} file, err={}\n", .{ path, entry.path, err });
-            return;
-        };
+        try paths.append(alloc, full_path);
     }
+
+    return paths;
 }

@@ -20,15 +20,55 @@ pub fn toCamelCase(alloc: std.mem.Allocator, s: []const u8, upperFirst: bool) ![
     return list.toOwnedSlice(alloc);
 }
 
-pub fn mapSqlType(s: []const u8) []const u8 {
-    if (std.mem.indexOf(u8, s, "int") != null) return "number";
-    if (std.mem.indexOf(u8, s, "serial") != null) return "number";
-    if (std.mem.indexOf(u8, s, "char") != null) return "string";
-    if (std.mem.indexOf(u8, s, "text") != null) return "string";
-    if (std.mem.indexOf(u8, s, "uuid") != null) return "string";
-    if (std.mem.indexOf(u8, s, "bool") != null) return "boolean";
-    if (std.mem.indexOf(u8, s, "json") != null) return "any";
-    if (std.mem.indexOf(u8, s, "timestamp") != null or std.mem.indexOf(u8, s, "date") != null or std.mem.indexOf(u8, s, "time") != null) return "string";
+pub fn indexOfCI(h: []const u8, n: []const u8) ?usize {
+    const hlen = h.len;
+    const nlen = n.len;
+    if (nlen == 0) return 0;
+    if (hlen < n.len) return null;
+    const last = hlen - nlen;
+    for (0..last + 1) |i| {
+        var ok = true;
+        for (n, 0..) |c, j| {
+            if (toLower(h[i + j]) != toLower(c)) {
+                ok = false;
+                break;
+            }
+        }
+        if (ok) return i;
+    }
+    return null;
+}
+
+fn startsWithCI(h: []const u8, n: []const u8) bool {
+    if (h.len < n.len) return false;
+    return indexOfCI(h, n) == 0;
+}
+
+fn endsWithCI(h: []const u8, n: []const u8) bool {
+    if (h.len < n.len) return false;
+    return startsWithCI(h[h.len - n.len ..], n);
+}
+
+pub fn mapSqlType(alloc: std.mem.Allocator, raw: []const u8) ![]const u8 {
+    const t0 = trimWhitespace(raw);
+
+    if (endsWithCI(t0, "[]")) {
+        const inner = t0[0 .. t0.len - 2];
+        const innerTs = try mapSqlType(alloc, inner);
+        return try std.fmt.allocPrint(alloc, "{s}[]", .{innerTs});
+    }
+
+    if (startsWithCI(t0, "uuid")) return "string";
+    if (startsWithCI(t0, "jsonb") or startsWithCI(t0, "json")) return "any";
+    if (startsWithCI(t0, "boolean") or startsWithCI(t0, "bool")) return "boolean";
+
+    if (indexOfCI(t0, "serial") != null) return "number";
+    if (indexOfCI(t0, "decimal") != null or indexOfCI(t0, "numeric") != null) return "number";
+
+    if (indexOfCI(t0, "char") != null or indexOfCI(t0, "text") != null) return "string";
+
+    if (indexOfCI(t0, "timestamp") != null or indexOfCI(t0, "date") != null or indexOfCI(t0, "time") != null) return "string";
+
     return "any";
 }
 
@@ -53,15 +93,6 @@ pub fn isColumnDef(s: []const u8) bool {
         if (startsWithCI(s, kw)) return false;
     }
 
-    return true;
-}
-
-fn startsWithCI(s: []const u8, kw: []const u8) bool {
-    if (s.len < kw.len) return false;
-    for (kw, 0..) |c, i| {
-        if (toLower(c) != c and toLower(c) != toLower(s[i])) return false;
-        if (toLower(s[i]) != toLower(c)) return false;
-    }
     return true;
 }
 
@@ -99,15 +130,17 @@ pub fn isWhitespace(c: u8) bool {
 }
 
 pub fn indexOfIgnoreCase(haystack: []const u8, needle: []const u8) ?usize {
-    for (0..haystack.len - needle.len) |i| {
-        var matched = true;
-        for (0..needle.len) |j| {
-            if (toLower(haystack[i + j]) != toLower(needle[j])) {
-                matched = false;
-                break;
+    if (haystack.len > needle.len) {
+        for (0..haystack.len - needle.len) |i| {
+            var matched = true;
+            for (0..needle.len) |j| {
+                if (toLower(haystack[i + j]) != toLower(needle[j])) {
+                    matched = false;
+                    break;
+                }
             }
+            if (matched) return i;
         }
-        if (matched) return i;
     }
 
     return null;
