@@ -208,16 +208,68 @@ const MapSqlTypeTest = struct {
 
 const mapSqlTypeTests = [_]MapSqlTypeTest{
     .{
-        .sqlType = "PRIMARY KEY DEFAULT INT",
-        .expected = "number",
-    },
-    .{
-        .sqlType = "created_at timestamp with time zone not null default now()",
+        .sqlType = "timestamp",
         .expected = "string",
     },
     .{
-        .sqlType = "notext int with time zone not null default now()",
+        .sqlType = "varchar",
+        .expected = "string",
+    },
+    .{
+        .sqlType = "varbinary",
+        .expected = "string",
+    },
+    .{
+        .sqlType = "tinytext",
+        .expected = "string",
+    },
+    .{
+        .sqlType = "text",
+        .expected = "string",
+    },
+    .{
+        .sqlType = "mediumtext",
+        .expected = "string",
+    },
+    .{
+        .sqlType = "longtext",
+        .expected = "string",
+    },
+    .{
+        .sqlType = "primary key default int",
         .expected = "number",
+    },
+    .{
+        .sqlType = "int",
+        .expected = "number",
+    },
+    .{
+        .sqlType = "int",
+        .expected = "number",
+    },
+    .{
+        .sqlType = "tinyblob",
+        .expected = "any",
+    },
+    .{
+        .sqlType = "mediumblob",
+        .expected = "any",
+    },
+    .{
+        .sqlType = "blob",
+        .expected = "any",
+    },
+    .{
+        .sqlType = "longblob",
+        .expected = "any",
+    },
+    .{
+        .sqlType = "binary",
+        .expected = "any",
+    },
+    .{
+        .sqlType = "",
+        .expected = "any",
     },
     // .{
     //     .haystack = "referrer_id  UUID            REFERENCES \"User\"(user_id) ON DELETE SET NULL,",
@@ -233,9 +285,9 @@ test "mapSqlType variations" {
         const got = try utils.mapSqlType(alloc, tc.sqlType);
 
         if (std.mem.eql(u8, got, tc.expected)) {
-            std.debug.print("Test {d} passed! Expected: {s} | Got: {s}\n", .{ i + 1, tc.expected, got });
+            std.debug.print("Test {d} ({s}) passed! Expected: {s} | Got: {s}\n", .{ i + 1, tc.sqlType, tc.expected, got });
         } else {
-            std.debug.print("Test {d} failed! Expected: {s} | Got: {s}\n", .{ i + 1, tc.expected, got });
+            std.debug.print("Test {d} ({s}) failed! Expected: {s} | Got: {s}\n", .{ i + 1, tc.sqlType, tc.expected, got });
         }
 
         try std.testing.expectEqual(tc.expected, got);

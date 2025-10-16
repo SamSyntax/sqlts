@@ -16,7 +16,7 @@ pub fn main() !void {
     const schema_path = args[1];
     const out_path = args[2];
     var asInterface: bool = false;
-    if (std.mem.eql(u8, args[3], "interface")) asInterface = true;
+    if (args.len == 4 and std.mem.eql(u8, args[3], "interface")) asInterface = true;
 
     const schema_files = reader.read_dir(alloc, schema_path) catch |err| {
         std.debug.print("{}\n", .{err});

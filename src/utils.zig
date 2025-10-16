@@ -50,38 +50,49 @@ pub fn endsWithCI(h: []const u8, n: []const u8) bool {
 }
 
 pub fn mapSqlType(alloc: std.mem.Allocator, raw: []const u8) ![]const u8 {
-    const t0 = trimWhitespace(raw);
+    var t0: []const u8 = trimWhitespace(raw);
+    const idx = indexOfCI(t0, "(");
+    if (idx != null)
+        t0 = t0[0..idx.?];
+
+    std.debug.print("What: {s}\n", .{t0});
 
     if (endsWithCI(t0, "[]")) {
         const inner = t0[0 .. t0.len - 2];
         const innerTs = try mapSqlType(alloc, inner);
         return try std.fmt.allocPrint(alloc, "{s}[]", .{innerTs});
     }
-
     // STRING DATA TYPES
     if (startsWithCI(t0, "uuid")) return "string";
     if (startsWithCI(t0, "varchar")) return "string";
     if (startsWithCI(t0, "varbinary")) return "string";
-    if (startsWithCI(t0, "tinyblob")) return "string";
     if (startsWithCI(t0, "tinytext")) return "string";
-    if (startsWithCI(t0, "blob")) return "string";
-    if (indexOfCI(t0, "char") != null or
-        indexOfCI(t0, "text") != null) return "string";
-    // if (startsWithCI(t0, "primary key default uuid")) return "string";
-    if (indexOfCI(t0, "timestamp") != null or
-        indexOfCI(t0, "date") != null or
-        indexOfCI(t0, "time") != null) return "string";
-    if (startsWithCI(t0, "boolean") or
-        startsWithCI(t0, "bool")) return "boolean";
+    if (startsWithCI(t0, "mediumtext")) return "string";
+    if (startsWithCI(t0, "longtext")) return "string";
+    if (indexOfCI(t0, "char") != null) return "string";
+    if (indexOfCI(t0, "text") != null) return "string";
+    if (indexOfCI(t0, "timestamp") != null) return "string";
+    if (indexOfCI(t0, "date") != null) return "string";
+    if (indexOfCI(t0, "time") != null) return "string";
 
     // NUMERIC DATA TYPES
-
-    if (indexOfCI(t0, "serial") != null) return "number";
-    if (indexOfCI(t0, "decimal") != null or indexOfCI(t0, "numeric") != null) return "number";
     if (indexOfCI(t0, "int") != null) return "number";
+    if (indexOfCI(t0, "integer") != null) return "number";
+    if (indexOfCI(t0, "bit") != null) return "number";
+    if (indexOfCI(t0, "tinyint") != null) return "number";
+    if (indexOfCI(t0, "smallint") != null) return "number";
+    if (indexOfCI(t0, "mediumint") != null) return "number";
+    if (indexOfCI(t0, "float") != null) return "number";
+    if (indexOfCI(t0, "double") != null) return "number";
+    if (indexOfCI(t0, "serial") != null) return "number";
+    if (indexOfCI(t0, "decimal") != null) return "number";
+    if (indexOfCI(t0, "dec") != null) return "number";
 
-    if (startsWithCI(t0, "jsonb") or startsWithCI(t0, "json")) return "any";
+    // BOOLEAN (It's a numeric type in SQL, but has a dedicated type in TS)
+    if (indexOfCI(t0, "bool") != null) return "boolean";
+    if (indexOfCI(t0, "boolean") != null) return "boolean";
 
+    // OTHER
     return "any";
 }
 

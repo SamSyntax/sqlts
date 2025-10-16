@@ -6,6 +6,7 @@ CREATE TABLE "Users" (
   preferences  JSONB           DEFAULT '{}'::jsonb,
   tags         TEXT[]          DEFAULT ARRAY['new_user']::TEXT[],
   moods        mood[]          NOT NULL,
+  dupa         BLOB(20)         NOT NULL,
   created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   referrer_id  UUID            REFERENCES "User"(user_id) ON DELETE SET NULL,
