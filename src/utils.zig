@@ -58,16 +58,29 @@ pub fn mapSqlType(alloc: std.mem.Allocator, raw: []const u8) ![]const u8 {
         return try std.fmt.allocPrint(alloc, "{s}[]", .{innerTs});
     }
 
+    // STRING DATA TYPES
     if (startsWithCI(t0, "uuid")) return "string";
-    if (startsWithCI(t0, "jsonb") or startsWithCI(t0, "json")) return "any";
-    if (startsWithCI(t0, "boolean") or startsWithCI(t0, "bool")) return "boolean";
+    if (startsWithCI(t0, "varchar")) return "string";
+    if (startsWithCI(t0, "varbinary")) return "string";
+    if (startsWithCI(t0, "tinyblob")) return "string";
+    if (startsWithCI(t0, "tinytext")) return "string";
+    if (startsWithCI(t0, "blob")) return "string";
+    if (indexOfCI(t0, "char") != null or
+        indexOfCI(t0, "text") != null) return "string";
+    // if (startsWithCI(t0, "primary key default uuid")) return "string";
+    if (indexOfCI(t0, "timestamp") != null or
+        indexOfCI(t0, "date") != null or
+        indexOfCI(t0, "time") != null) return "string";
+    if (startsWithCI(t0, "boolean") or
+        startsWithCI(t0, "bool")) return "boolean";
+
+    // NUMERIC DATA TYPES
 
     if (indexOfCI(t0, "serial") != null) return "number";
     if (indexOfCI(t0, "decimal") != null or indexOfCI(t0, "numeric") != null) return "number";
+    if (indexOfCI(t0, "int") != null) return "number";
 
-    if (indexOfCI(t0, "char") != null or indexOfCI(t0, "text") != null) return "string";
-
-    if (indexOfCI(t0, "timestamp") != null or indexOfCI(t0, "date") != null or indexOfCI(t0, "time") != null) return "string";
+    if (startsWithCI(t0, "jsonb") or startsWithCI(t0, "json")) return "any";
 
     return "any";
 }

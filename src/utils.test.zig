@@ -199,3 +199,45 @@ test "endsWithCI variations" {
         try std.testing.expectEqual(tc.expected, got);
     }
 }
+
+// ╔══════════════════════════════════════ mapSqlType TESTS ══════════════════════════════════════╗
+const MapSqlTypeTest = struct {
+    sqlType: []const u8,
+    expected: []const u8,
+};
+
+const mapSqlTypeTests = [_]MapSqlTypeTest{
+    .{
+        .sqlType = "PRIMARY KEY DEFAULT INT",
+        .expected = "number",
+    },
+    .{
+        .sqlType = "created_at timestamp with time zone not null default now()",
+        .expected = "string",
+    },
+    .{
+        .sqlType = "notext int with time zone not null default now()",
+        .expected = "number",
+    },
+    // .{
+    //     .haystack = "referrer_id  UUID            REFERENCES \"User\"(user_id) ON DELETE SET NULL,",
+    //     .needle = "REFERENCES",
+    //     .expected = false,
+    // },
+};
+
+test "mapSqlType variations" {
+    std.debug.print("\n═══════════════ mapSqlType TESTS ═══════════════\n\n", .{});
+    const alloc = std.testing.allocator;
+    for (mapSqlTypeTests, 0..) |tc, i| {
+        const got = try utils.mapSqlType(alloc, tc.sqlType);
+
+        if (std.mem.eql(u8, got, tc.expected)) {
+            std.debug.print("Test {d} passed! Expected: {s} | Got: {s}\n", .{ i + 1, tc.expected, got });
+        } else {
+            std.debug.print("Test {d} failed! Expected: {s} | Got: {s}\n", .{ i + 1, tc.expected, got });
+        }
+
+        try std.testing.expectEqual(tc.expected, got);
+    }
+}
