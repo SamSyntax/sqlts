@@ -14,6 +14,6 @@ jobs:
       - name: Install Snap
         run: sudo apt install snapd
       - name: Install Zig
-        run: snap install zig --classic --beta
+        run: sudo snap install zig --classic --beta
       - name: Run Tests
         run: make test
