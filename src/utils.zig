@@ -55,8 +55,6 @@ pub fn mapSqlType(alloc: std.mem.Allocator, raw: []const u8) ![]const u8 {
     if (idx != null)
         t0 = t0[0..idx.?];
 
-    std.debug.print("What: {s}\n", .{t0});
-
     if (endsWithCI(t0, "[]")) {
         const inner = t0[0 .. t0.len - 2];
         const innerTs = try mapSqlType(alloc, inner);
@@ -105,6 +103,7 @@ pub fn trimWhitespace(s: []const u8) []const u8 {
 }
 
 pub fn isColumnDef(s: []const u8) bool {
+    std.debug.print("isColumd: {s}\n", .{s});
     const kws = &[_][]const u8{
         "constraint",
         "primary key",
