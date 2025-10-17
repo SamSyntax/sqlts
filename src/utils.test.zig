@@ -1,5 +1,4 @@
 const std = @import("std");
-const testing = std.testing;
 const utils = @import("utils.zig");
 
 // ╔══════════════════════════════════════ toCamelCase TESTS ══════════════════════════════════════╗
@@ -359,9 +358,6 @@ test "isColumnDef variations" {
         } else {
             std.debug.print("Test {d} failed! Expected: {any} | Got: {any}\n", .{ i + 1, tc.expected, got });
         }
-        std.testing.expectEqual(tc.expected, got) catch |err| {
-            std.debug.print("[TEST FAIL] {any}\n", .{err});
-            return err;
-        };
+        try std.testing.expectEqual(tc.expected, got);
     }
 }
