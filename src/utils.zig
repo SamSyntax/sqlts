@@ -103,7 +103,6 @@ pub fn trimWhitespace(s: []const u8) []const u8 {
 }
 
 pub fn isColumnDef(s: []const u8) bool {
-    std.debug.print("isColumd: {s}\n", .{s});
     const kws = &[_][]const u8{
         "constraint",
         "primary key",
