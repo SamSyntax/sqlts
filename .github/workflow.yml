@@ -1,0 +1,19 @@
+name: Zig tests
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Snap
+        run: sudo apt install snapd
+      - name: Install Zig
+        run: sudo snap install zig --classic --beta
+      - name: Run Tests
+        run: make test
